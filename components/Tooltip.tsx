@@ -12,22 +12,36 @@ const Tooltip: React.FC<TooltipProps> = ({ content, title, children }) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = () => {
-    if (triggerRef.current) {
+  const updatePosition = () => {
+     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      // Calculate position to center above the element
-      // We will adjust via CSS transform in the portal for simpler centering
       setPosition({
         top: rect.top + window.scrollY,
         left: rect.left + window.scrollX + (rect.width / 2)
       });
-      setIsVisible(true);
     }
+  }
+
+  const handleMouseEnter = () => {
+    updatePosition();
+    setIsVisible(true);
   };
 
   const handleMouseLeave = () => {
     setIsVisible(false);
   };
+  
+  // Update position on scroll to keep tooltip attached if the user scrolls while hovering
+  useEffect(() => {
+    if (isVisible) {
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isVisible]);
 
   const tooltipContent = (
     <div 
@@ -38,13 +52,13 @@ const Tooltip: React.FC<TooltipProps> = ({ content, title, children }) => {
         transform: 'translate(-50%, -100%) translateY(-10px)' // Center and move up
       }}
     >
-        <div className="bg-gray-900/95 border border-cyan-500/50 rounded-lg shadow-[0_0_15px_rgba(8,145,178,0.3)] p-3 animate-fade-in backdrop-blur-sm relative">
+        <div className="bg-gray-900/95 border border-cyan-500/50 rounded-lg shadow-[0_0_15px_rgba(8,145,178,0.3)] p-3 animate-fade-in backdrop-blur-sm relative text-left">
             {title && (
                 <div className="font-orbitron text-cyan-300 text-sm font-bold mb-1 border-b border-cyan-500/30 pb-1">
                 {title}
                 </div>
             )}
-            <div className="text-xs text-gray-300 leading-relaxed">
+            <div className="text-xs text-gray-300 leading-relaxed break-words">
                 {content}
             </div>
             

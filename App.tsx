@@ -103,16 +103,9 @@ const App: React.FC = () => {
             });
         }
     } else {
-        // Keep previous image if exists and we are in same location
-        // Actually, if we just stay in same location, we might want to keep the old image
-        // The service doesn't return sceneImage by default, so we preserve it from previous state if needed
-        // But here we rely on the component state in StoryDisplay or we can carry it over.
-        // Let's carry it over if the location hasn't changed drastically or if the API didn't return one.
+        // Keep previous image if exists and we are in same location or just interacting
         setGameState(prevState => {
             if (!prevState) return newState;
-             // If we didn't move far, keep the image? 
-             // Simplest: If new state has no image, copy from old if location matches? 
-             // For now, only generates on NEW location.
              if (prevState.sceneImage && !newState.sceneImage && 
                  prevState.location.x === newState.location.x && 
                  prevState.location.y === newState.location.y) {

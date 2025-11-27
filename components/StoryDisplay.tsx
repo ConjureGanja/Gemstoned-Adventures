@@ -32,7 +32,7 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ storyLog, isLoading }) => {
                     case 'glitch': className = 'animate-glitch-container'; break;
                     case 'flash_red': className = 'animate-flash-red'; break;
                     case 'flash_white': className = 'animate-flash-white'; break;
-                    case 'particles_combat': className = 'animate-pulse-fast'; break; // Simple fallback if not using canvas
+                    case 'particles_combat': className = 'animate-pulse-fast border-yellow-400/50 shadow-yellow-500/20'; break;
                     default: className = '';
                 }
 
@@ -44,8 +44,15 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ storyLog, isLoading }) => {
             }
 
             // Handle Image Update
-            if (lastEntry.type === 'gemini' && lastEntry.state?.sceneImage) {
-                setCurrentImage(lastEntry.state.sceneImage);
+            // We look through the log to find the most recent state that has an image
+            // This ensures if the user reloads or if we add text-only updates, the image persists
+            const latestImage = [...storyLog]
+                .reverse()
+                .find(entry => entry.state?.sceneImage)
+                ?.state?.sceneImage;
+                
+            if (latestImage) {
+                setCurrentImage(latestImage);
             }
         }
     }, [storyLog, isLoading]);
@@ -53,20 +60,19 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ storyLog, isLoading }) => {
   return (
     <div 
         ref={containerRef}
-        className={`flex-grow relative bg-black/80 rounded-lg overflow-hidden border border-cyan-400/20 shadow-2xl ${effectClass}`}
+        className={`flex-grow relative bg-black/80 rounded-lg overflow-hidden border border-cyan-400/20 shadow-2xl transition-all duration-300 ${effectClass}`}
     >
       {/* Background Image Layer */}
       {currentImage && (
           <div 
-            className="absolute inset-0 z-0 opacity-40 transition-opacity duration-1000"
+            className="absolute inset-0 z-0 opacity-30 transition-opacity duration-1000 ease-in-out"
             style={{ 
                 backgroundImage: `url(${currentImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                filter: 'blur(2px) brightness(0.7)'
             }}
           >
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/90 to-gray-900/40"></div>
           </div>
       )}
 
@@ -91,8 +97,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ storyLog, isLoading }) => {
                         <span className="text-xs font-bold text-red-500 px-2 py-0.5 border border-red-500/30 rounded bg-red-900/20 animate-pulse">COMBAT ENGAGED</span>
                     )}
                     </div>
-                    
-                    {/* Inline Scene Image for specific logs if we wanted to show it in the flow, currently used as bg */}
                     
                     <div className="p-4">
                         {/* Scene Description */}
